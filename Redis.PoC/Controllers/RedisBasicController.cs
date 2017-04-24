@@ -8,8 +8,8 @@ using Redis.PoC.Models;
 
 namespace Redis.PoC.Controllers
 {
-    [Route("api/[controller]")]
-    public class RedisController : Controller
+    [Route("api/[controller]/[action]")]
+    public class RedisBasicController : Controller
     {
         private readonly string conn = "localhost:6379";
         // GET api/values/
@@ -28,7 +28,7 @@ namespace Redis.PoC.Controllers
             }
         }
 
-        [HttpGet("[action]/{key}")]
+        [HttpGet("{key}")]
         public RedisValue GetByKey(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -43,7 +43,7 @@ namespace Redis.PoC.Controllers
         }
 
         // POST api/values
-        [HttpPost("[action]")]
+        [HttpPost]
         public void SetValue([FromBody] RedisValue value)
         {
             var manager = new RedisManagerPool(conn);
@@ -53,13 +53,33 @@ namespace Redis.PoC.Controllers
             }
         }
 
-        [HttpPost("[action]")]
+        [HttpPost]
         public void Publish([FromBody] RedisChannel value)
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
                 client.PublishMessage(value.ChannelId, value.Value);
+            }
+        }
+
+        [HttpPost]
+        public void AddToHash([FromBody] RedisHash value)
+        {
+            var manager = new RedisManagerPool(conn);
+            using (var client = manager.GetClient())
+            {
+                client.SetEntryInHash(value.HashId, value.Key, value.Value);
+            }
+        }
+
+        [HttpGet("{hashId}")]
+        public Dictionary<string,string> GetFromHash(string hashId)
+        {
+            var manager = new RedisManagerPool(conn);
+            using (var client = manager.GetClient())
+            {
+                return client.GetAllEntriesFromHash(hashId);
             }
         }
 
