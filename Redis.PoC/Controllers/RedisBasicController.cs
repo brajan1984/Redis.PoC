@@ -12,43 +12,27 @@ namespace Redis.PoC.Controllers
     public class RedisBasicController : Controller
     {
         private readonly string conn = "localhost:6379";
-        // GET api/values/
+       
+
         [HttpGet]
-        public RedisValue Get()
+        public RedisValue GetValue()
         {
-            var key = "Invite";
-
-
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
-                var val = client.Get<RedisValue>(key);
-
-                return val;
-            }
-        }
-
-        [HttpGet("{key}")]
-        public RedisValue GetByKey(string key)
-        {
-            if (string.IsNullOrEmpty(key))
-            {
-                key = "Invite";
-            }
-            var manager = new RedisManagerPool(conn);
-            using (var client = manager.GetClient())
-            {
-                return client.Get<RedisValue>(key);
+                return client.Get<RedisValue>("simpleKey");
             }
         }
 
         // POST api/values
-        [HttpPost]
-        public void SetValue([FromBody] RedisValue value)
+        [HttpGet]
+        public void SetValue()
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
+                var value = new RedisValue { Key = "simpleKey", Value = "value1" };
+
                 client.Set(value.Key, value);
             }
         }
@@ -63,23 +47,36 @@ namespace Redis.PoC.Controllers
             }
         }
 
-        [HttpPost]
-        public void AddToHash([FromBody] RedisHash value)
+        [HttpGet]
+        public void AddToHash()
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
-                client.SetEntryInHash(value.HashId, value.Key, value.Value);
+                client.SetEntryInHash("hash1", "key1", "value1");
+                client.SetEntryInHash("hash1", "key2", "value2");
+                client.SetEntryInHash("hash1", "key3", "value3");
+                client.SetEntryInHash("hash1", "key4", "value4");
             }
         }
 
-        [HttpGet("{hashId}")]
-        public Dictionary<string,string> GetFromHash(string hashId)
+        [HttpGet]
+        public void ModifyKeyInHash()
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
-                return client.GetAllEntriesFromHash(hashId);
+                client.SetEntryInHash("hash1", "key1", "value100");
+            }
+        }
+
+        [HttpGet()]
+        public Dictionary<string,string> GetFromHash()
+        {
+            var manager = new RedisManagerPool(conn);
+            using (var client = manager.GetClient())
+            {
+                return client.GetAllEntriesFromHash("hash1");
             }
         }
 

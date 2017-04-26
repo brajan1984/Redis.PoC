@@ -12,73 +12,75 @@ namespace Redis.PoC.Controllers
     public class RedisCollectionsController : Controller
     {
         private readonly string conn = "localhost:6379";
-        // GET api/values/
-        [HttpGet]
-        public RedisValue Get()
-        {
-            var key = "Invite";
-
-
-            var manager = new RedisManagerPool(conn);
-            using (var client = manager.GetClient())
-            {
-                var val = client.Get<RedisValue>(key);
-
-                return val;
-            }
-        }
-
-        [HttpGet("[action]/{key}")]
-        public RedisValue GetByKey(string key)
-        {
-            if (string.IsNullOrEmpty(key))
-            {
-                key = "Invite";
-            }
-            var manager = new RedisManagerPool(conn);
-            using (var client = manager.GetClient())
-            {
-                return client.Get<RedisValue>(key);
-            }
-        }
         
-        [HttpPost]
-        public void AddToList([FromBody] RedisValue value)
+        
+        [HttpGet]
+        public void AddToList()
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
-                client.AddItemToList(value.Key, value.Value);
+                client.AddItemToList("simpleList", "value1");
+                client.AddItemToList("simpleList", "value2");
+                client.AddItemToList("simpleList", "value1");
+                client.AddItemToList("simpleList", "value3");
+                client.AddItemToList("simpleList", "value4");
             }
         }
 
         [HttpGet]
-        public List<string> GetList(string listId)
+        public List<string> GetList()
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
-                return client.GetAllItemsFromList(listId);
-            }
-        }
-
-        [HttpPost]
-        public void AddToSet([FromBody] RedisValue value)
-        {
-            var manager = new RedisManagerPool(conn);
-            using (var client = manager.GetClient())
-            {
-                client.AddItemToSet(value.Key, value.Value);
+                return client.GetAllItemsFromList("simpleList");
             }
         }
 
         [HttpGet]
-        public HashSet<string> GetSet(string id)
+        public void AddToSet()
         {
             var manager = new RedisManagerPool(conn);
             using (var client = manager.GetClient())
             {
-                return client.GetAllItemsFromSet(id);
+                client.AddItemToSet("simpleSet", "value1");
+                client.AddItemToSet("simpleSet", "value2");
+                client.AddItemToSet("simpleSet", "value1");
+                client.AddItemToSet("simpleSet", "value3");
+                client.AddItemToSet("simpleSet", "value4");
+            }
+        }
+
+        [HttpGet]
+        public HashSet<string> GetSet()
+        {
+            var manager = new RedisManagerPool(conn);
+            using (var client = manager.GetClient())
+            {
+                return client.GetAllItemsFromSet("simpleSet");
+            }
+        }
+
+        [HttpGet]
+        public void AddToSortedSet()
+        {
+            var manager = new RedisManagerPool(conn);
+            using (var client = manager.GetClient())
+            {
+                client.AddItemToSortedSet("sortedSet", "value1", 5);
+                client.AddItemToSortedSet("sortedSet", "value2", 1);
+                client.AddItemToSortedSet("sortedSet", "value3", 40);
+            }
+        }
+
+        [HttpGet]
+        public List<string> GetSortedSet()
+        {
+            var manager = new RedisManagerPool(conn);
+            using (var client = manager.GetClient())
+            {
+                return client.GetAllItemsFromSortedSet("sortedSet");
             }
         }
 
